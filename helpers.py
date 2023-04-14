@@ -139,7 +139,7 @@ def post_stable():
     "🔸" + table.iloc[2]['symbol'] +": " + "{:.2%}".format(table.iloc[2]['apy'] / 100) + "\n" +\
     "🔸" + table.iloc[3]['symbol'] +": " + "{:.2%}".format(table.iloc[3]['apy'] / 100) + "\n" +\
     "🔸" + table.iloc[4]['symbol'] +": " + "{:.2%}".format(table.iloc[4]['apy'] / 100) + "\n" +"\n" +\
-    "https://inverse.finance/yield-opportunities"
+    "https://inverse.finance/yield"
 
     print(message)
     #message = message + " " + message.split()[-1]
@@ -156,7 +156,7 @@ def post_volatile():
         "🔹" + table.iloc[2]['symbol'] +": " + "{:.2%}".format(table.iloc[2]['apy'] / 100) + "\n" +\
         "🔹" + table.iloc[3]['symbol'] +": " + "{:.2%}".format(table.iloc[3]['apy'] / 100) + "\n" +\
         "🔸" + table.iloc[4]['symbol'] +": " + "{:.2%}".format(table.iloc[4]['apy'] / 100) + "\n" +"\n" +\
-        "https://inverse.finance/yield-opportunities"
+        "https://inverse.finance/yield"
     
         print(message)
         #message = message + " " + message.split()[-1]    
