@@ -1,5 +1,5 @@
 import tweepy
-import os
+import os,sys
 import base64
 import requests
 import seaborn as sns
@@ -13,59 +13,66 @@ from bs4 import BeautifulSoup
 
 load_dotenv()
 
-def post_tweet(content=None,filename=None):
-    try:
-        # Set up API keys and access tokens
-        consumer_key = os.environ.get("TWITTER_CONSUMER_KEY")
-        consumer_secret = os.environ.get("TWITTER_CONSUMER_SECRET")
-        access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
-        access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
-        bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
+def post_tweet(content=None, filename=None, max_attempts=3):
+    attempt = 5
+    
+    while attempt <= max_attempts:
+        try:
+            # Set up API keys and access tokens
+            consumer_key = os.environ.get("TWITTER_CONSUMER_KEY")
+            consumer_secret = os.environ.get("TWITTER_CONSUMER_SECRET")
+            access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
+            access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
+            bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
 
-        # OAuth process, using the keys and tokens
-        auth = tweepy.OAuth1UserHandler(
-            consumer_key, 
-            consumer_secret, 
-            access_token, 
-            access_token_secret
-        )
+            # OAuth process, using the keys and tokens
+            auth = tweepy.OAuth1UserHandler(
+                consumer_key, 
+                consumer_secret, 
+                access_token, 
+                access_token_secret
+            )
 
-        # Creation of the actual interface, using authentication
-        api = tweepy.Client(
-            consumer_key=consumer_key, 
-            consumer_secret=consumer_secret, 
-            access_token=access_token, 
-            access_token_secret=access_token_secret,
-            bearer_token=bearer_token
-        )
+            # Creation of the actual interface, using authentication
+            api = tweepy.Client(
+                consumer_key=consumer_key, 
+                consumer_secret=consumer_secret, 
+                access_token=access_token, 
+                access_token_secret=access_token_secret,
+                bearer_token=bearer_token
+            )
 
-        api2 = tweepy.API(auth, wait_on_rate_limit = True)
-        
-        # Upload image if provided
-        if filename is not None:
-            # Check if the file is a png file
-            if filename.lower().endswith('.png'):
-                with open(filename, 'rb') as image_file:
-                    media = api2.media_upload(filename, file=image_file)
-                    media_id = media.media_id
+            api2 = tweepy.API(auth, wait_on_rate_limit = True)
+            
+            # Upload image if provided
+            if filename is not None:
+                # Check if the file is a png file
+                if filename.lower().endswith('.png'):
+                    with open(filename, 'rb') as image_file:
+                        media = api2.media_upload(filename, file=image_file)
+                        media_id = media.media_id
+                else:
+                    raise ValueError("Image file must be a png file.")
             else:
-                raise ValueError("Image file must be a png file.")
-        else:
-            media_id = None
+                media_id = None
 
-        # Create the tweet with or without the image
-        if media_id is not None:
-            tweet = api.create_tweet(text=content, media_ids=[media_id])
-        else:
-            tweet = api.create_tweet(text=content)
+            # Create the tweet with or without the image
+            if media_id is not None:
+                tweet = api.create_tweet(text=content, media_ids=[media_id])
+            else:
+                tweet = api.create_tweet(text=content)
 
-        return tweet
-    except Exception as e:
-        print("Error: Unable to post tweet.")
-        #print line of error
-        import traceback
-        traceback.print_exc()
-        pass
+            return tweet
+        except Exception as e:
+            if attempt == max_attempts:
+                print("Error: Unable to post tweet.")
+                import traceback
+                traceback.print_exc()
+            else:
+                attempt += 1
+                print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
+    pass
+
 
 
 #get data from https://www.inverse.finance/api/oppyS
