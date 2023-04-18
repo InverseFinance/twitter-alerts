@@ -1,5 +1,6 @@
 import sched
 import time
+import sys
 import datetime
 import helpers
 import threading
@@ -24,6 +25,14 @@ def task3():
     # write code for task 3 here
     helpers.post_liquidity()
 
+def waiting_indicator():
+    symbols = ['-', '\\', '|', '/']
+    while True:
+        for symbol in symbols:
+            sys.stdout.write("\rWaiting " + symbol)
+            sys.stdout.flush()
+            time.sleep(0.2)
+
 def schedule_tasks():
     # create a scheduler instance
     s = sched.scheduler(time.time, time.sleep)
@@ -32,9 +41,10 @@ def schedule_tasks():
     schedule_next_task_func(14,0, task1, s)
     schedule_next_task_func(15,0, task2, s)
     schedule_next_task_func(22,0, task3, s)
-    #schedule_next_task_func(14,0, task1, s)
-    #schedule_next_task_func(15,0, task2, s)
-    #schedule_next_task_func(21,0, task3, s)
+
+    # start the waiting indicator in a separate thread
+    waiting_thread = threading.Thread(target=waiting_indicator, daemon=True)
+    waiting_thread.start()
 
     # start the scheduler
     s.run()
