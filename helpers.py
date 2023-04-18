@@ -14,8 +14,8 @@ from bs4 import BeautifulSoup
 load_dotenv()
 
 def post_tweet(content=None, filename=None, max_attempts=3):
-    attempt = 5
-    
+    attempt = 1
+
     while attempt <= max_attempts:
         try:
             # Set up API keys and access tokens
