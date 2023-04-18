@@ -43,8 +43,8 @@ def schedule_tasks():
     schedule_next_task_func(22,0, task3, s)
 
     # start the waiting indicator in a separate thread
-    waiting_thread = threading.Thread(target=waiting_indicator, daemon=True)
-    waiting_thread.start()
+    #waiting_thread = threading.Thread(target=waiting_indicator, daemon=True)
+    #waiting_thread.start()
 
     # start the scheduler
     s.run()
