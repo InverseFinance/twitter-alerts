@@ -192,7 +192,7 @@ def post_volatile():
 
 
 def get_liquidity_data(retry_attempts=5, retry_delay=5):
-    url = "https://www.inverse.finance/api/transparency/liquidity?deduce=1"
+    url = "https://www.inverse.finance/api/transparency/liquidity?cacheFirst=true"
 
     for attempt in range(retry_attempts):
         try:
