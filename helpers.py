@@ -192,7 +192,7 @@ def post_volatile():
 
 
 def get_liquidity_data(retry_attempts=5, retry_delay=5):
-    url = "https://www.inverse.finance/api/transparency/liquidity?cacheFirst=true"
+    url = "https://www.inverse.finance/api/transparency/liquidity?deduce=1"
 
     for attempt in range(retry_attempts):
         try:
@@ -230,10 +230,13 @@ def get_liquidity_data(retry_attempts=5, retry_delay=5):
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric)
 
     df = df[df.lpName.str.contains('DOLA')]
+    df = df[df.deduce.isnull()]
 
     df_sorted = df.sort_values(by=["apy"], ascending=False)
 
     return df_sorted
+
+
 
 # get the sum from the tvl column from liquidity data
 def get_total_liquidity():
