@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 import psycopg2
 import json
 
+from time import sleep
 
 load_dotenv()
 
@@ -79,39 +80,59 @@ def post_tweet(content=None, filename=None, max_attempts=3):
 
 
 #get data from https://www.inverse.finance/api/oppyS
-def get_apy_data():
+import requests
+import pandas as pd
+from time import sleep
+
+def get_apy_data(retry_attempts=5, retry_delay=5):
     url = "https://www.inverse.finance/api/oppys"
-    response = requests.get(url)
-    data = response.json()
+
+    for attempt in range(retry_attempts):
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+
+            if data:
+                break
+        except requests.exceptions.RequestException as e:
+            print(f"Request failed (attempt {attempt + 1}): {e}")
+            if attempt < retry_attempts - 1:
+                sleep(retry_delay)
+            else:
+                print("Max retry attempts reached. Returning empty DataFrame.")
+                return pd.DataFrame()
+    else:
+        print("No data received. Returning empty DataFrame.")
+        return pd.DataFrame()
 
     df = pd.json_normalize(data["pools"])
 
-    # Convert columns from object to numeric types
     numeric_cols = [
         "tvlUsd",
-        "apyBase", 
-        "apyReward", 
-        "apy", 
-        "apyPct1D", 
-        "apyPct7D", 
-        "apyPct30D", 
-        "mu", 
-        "sigma", 
-        "count", 
-        "il7d", 
-        "apyBase7d", 
-        "apyMean30d", 
-        "volumeUsd1d", 
-        "volumeUsd7d", 
+        "apyBase",
+        "apyReward",
+        "apy",
+        "apyPct1D",
+        "apyPct7D",
+        "apyPct30D",
+        "mu",
+        "sigma",
+        "count",
+        "il7d",
+        "apyBase7d",
+        "apyMean30d",
+        "volumeUsd1d",
+        "volumeUsd7d",
         "apyBaseInception"
-        ]
+    ]
 
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric)
 
-    # Sort by apy column in descending order
     df_sorted = df.sort_values(by=["apy"], ascending=False)
 
-    return (df_sorted)
+    return df_sorted
+
 
 
 def get_top_apy(type):
@@ -173,18 +194,33 @@ def post_volatile():
         post_tweet(content=message)
 
 
+def get_liquidity_data(retry_attempts=5, retry_delay=5):
+    url = "https://www.inverse.finance/api/transparency/liquidity?cacheFirst=true"
 
-def get_liquidity_data():
-    url = "https://www.inverse.finance/api/transparency/liquidity?deduce=1"
-    response = requests.get(url)
-    data = response.json()
+    for attempt in range(retry_attempts):
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+
+            if data:
+                break
+        except requests.exceptions.RequestException as e:
+            print(f"Request failed (attempt {attempt + 1}): {e}")
+            if attempt < retry_attempts - 1:
+                sleep(retry_delay)
+            else:
+                print("Max retry attempts reached. Returning empty DataFrame.")
+                return pd.DataFrame()
+    else:
+        print("No data received. Returning empty DataFrame.")
+        return pd.DataFrame()
 
     df = pd.json_normalize(data["liquidity"])
 
-    # Convert columns from object to numeric types
     numeric_cols = [
         "chainId",
-        "decimals", 
+        "decimals",
         "tvl",
         "ownedAmount",
         "perc",
@@ -192,20 +228,17 @@ def get_liquidity_data():
         "dolaBalance",
         "dolaWeight",
         "rewardDay"
-        ]
+    ]
 
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric)
-    
-    # exclude fields whith an lpName that doesnt include dOLA
+
     df = df[df.lpName.str.contains('DOLA')]
     df = df[df.deduce.isnull()]
 
-
-
-    # Sort by apy column in descending order
     df_sorted = df.sort_values(by=["apy"], ascending=False)
 
-    return (df_sorted)
+    return df_sorted
+
 
 
 # get the sum from the tvl column from liquidity data
