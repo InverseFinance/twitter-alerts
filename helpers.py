@@ -4,18 +4,83 @@ import base64
 import requests
 import seaborn as sns
 from dotenv import load_dotenv
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-from prettytable import PrettyTable
-import matplotlib.style as style
-from bs4 import BeautifulSoup
+
 import psycopg2
 import json
+import requests
+import pandas as pd
+from time import sleep
+
 
 from time import sleep
 
 load_dotenv()
+
+def post_tweet_private(content=None, filename=None, max_attempts=3):
+    attempt = 1
+
+    while attempt <= max_attempts:
+        try:
+            # Set up API keys and access tokens
+            consumer_key = os.environ.get("TWITTER_CONSUMER_KEY")
+            consumer_secret = os.environ.get("TWITTER_CONSUMER_SECRET")
+            access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
+            access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
+            bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
+
+            # OAuth process, using the keys and tokens
+            auth = tweepy.OAuth1UserHandler(
+                consumer_key, 
+                consumer_secret, 
+                access_token, 
+                access_token_secret
+            )
+
+            # Creation of the actual interface, using authentication
+            api = tweepy.Client(
+                consumer_key=consumer_key, 
+                consumer_secret=consumer_secret, 
+                access_token=access_token, 
+                access_token_secret=access_token_secret,
+                bearer_token=bearer_token
+            )
+
+            api2 = tweepy.API(auth, wait_on_rate_limit = True)
+
+            # Send direct message to yourself with the tweet content
+            user = api.get_current_user()  # Get your own user information
+            user_id = user.id
+
+            # Upload image if provided
+            if filename is not None:
+                # Check if the file is a png file
+                if filename.lower().endswith('.png'):
+                    with open(filename, 'rb') as image_file:
+                        media = api2.media_upload(filename, file=image_file)
+                        media_id = media.media_id
+                else:
+                    raise ValueError("Image file must be a png file.")
+            else:
+                media_id = None
+
+            # Create the direct message with or without the image
+            if media_id is not None:
+                message = api.send_direct_message(user_id, text=content, attachment_type="media", attachment_media_id=media_id)
+            else:
+                message = api.send_direct_message(user_id, text=content)
+
+            return message
+        except Exception as e:
+            if attempt == max_attempts:
+                print("Error: Unable to send private tweet.")
+                import traceback
+                traceback.print_exc()
+            else:
+                attempt += 1
+                print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
+    pass
+
+    
 
 def post_tweet(content=None, filename=None, max_attempts=3):
     attempt = 1
@@ -80,10 +145,6 @@ def post_tweet(content=None, filename=None, max_attempts=3):
 
 
 #get data from https://www.inverse.finance/api/oppyS
-import requests
-import pandas as pd
-from time import sleep
-
 def get_apy_data(retry_attempts=5, retry_delay=5):
     url = "https://www.inverse.finance/api/oppys"
 
@@ -291,7 +352,7 @@ def post_liquidity():
     
     post_tweet(content=message)
 
-def get_alerts_from_db(alert_ids):
+def get_alerts_from_db(alert_ids, since=None):
     # Replace the placeholders with your actual PostgreSQL database credentials
     conn = psycopg2.connect(
         dbname=os.environ.get('DB_NAME'),
@@ -303,7 +364,10 @@ def get_alerts_from_db(alert_ids):
     )
 
     cur = conn.cursor()
-    cur.execute("SELECT created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s);", (alert_ids,))
+    if since:
+        cur.execute("SELECT created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s) AND created_at > %s ORDER BY created_at DESC", (alert_ids, since))
+    else:
+        cur.execute("SELECT created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s) ORDER BY created_at DESC", (alert_ids,))
     rows = cur.fetchall()
     conn.close()
 
@@ -317,5 +381,27 @@ def get_alerts_from_db(alert_ids):
 
     return df
 
-df = get_alerts_from_db([81])
-print(df)
+def check_and_send_tweet(alert):
+    embed = alert['embed']
+    for field in embed['fields']:
+        if field['name'] == 'USD value':
+            value = float(field['value'].replace(',', ''))
+            if value > 1000000:
+                # Send tweet with the required information
+                tweet = f"Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert['alert_id']}."
+                post_tweet(tweet)
+            else :
+                print(f"Not tweeted : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert['alert_id']}.")
+
+
+def monitor_database(alert_ids, poll_interval=60):
+    last_check_time = None
+    while True:
+        new_alerts = get_alerts_from_db(alert_ids, since=last_check_time)
+        if not new_alerts.empty:
+            last_check_time = new_alerts['created_at'].max()
+
+            for index, row in new_alerts.iterrows():
+                check_and_send_tweet(row['message'])
+
+        time.sleep(poll_interval)
