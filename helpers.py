@@ -16,71 +16,55 @@ from time import sleep
 
 load_dotenv()
 
-def post_tweet_private(content=None, filename=None, max_attempts=3):
+import os
+import tweepy
+
+def post_tweet_private(content=None, max_attempts=3):
     attempt = 1
 
     while attempt <= max_attempts:
         try:
-            # Set up API keys and access tokens
             consumer_key = os.environ.get("TWITTER_CONSUMER_KEY")
             consumer_secret = os.environ.get("TWITTER_CONSUMER_SECRET")
             access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
             access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
             bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
 
-            # OAuth process, using the keys and tokens
             auth = tweepy.OAuth1UserHandler(
-                consumer_key, 
-                consumer_secret, 
-                access_token, 
+                consumer_key,
+                consumer_secret,
+                access_token,
                 access_token_secret
             )
 
-            # Creation of the actual interface, using authentication
             api = tweepy.Client(
-                consumer_key=consumer_key, 
-                consumer_secret=consumer_secret, 
-                access_token=access_token, 
+                consumer_key=consumer_key,
+                consumer_secret=consumer_secret,
+                access_token=access_token,
                 access_token_secret=access_token_secret,
                 bearer_token=bearer_token
             )
 
-            api2 = tweepy.API(auth, wait_on_rate_limit = True)
+            current_user = api.get_me()
+            print(current_user.data.id)
+            recipient_id = current_user.data.id
 
-            # Send direct message to yourself with the tweet content
-            user = api.get_current_user()  # Get your own user information
-            user_id = user.id
+            dm = api.create_direct_message(
+                participant_id=recipient_id,
+                text=content
+            )
 
-            # Upload image if provided
-            if filename is not None:
-                # Check if the file is a png file
-                if filename.lower().endswith('.png'):
-                    with open(filename, 'rb') as image_file:
-                        media = api2.media_upload(filename, file=image_file)
-                        media_id = media.media_id
-                else:
-                    raise ValueError("Image file must be a png file.")
-            else:
-                media_id = None
-
-            # Create the direct message with or without the image
-            if media_id is not None:
-                message = api.send_direct_message(user_id, text=content, attachment_type="media", attachment_media_id=media_id)
-            else:
-                message = api.send_direct_message(user_id, text=content)
-
-            return message
+            print("Direct message sent successfully.")
+            return True
         except Exception as e:
             if attempt == max_attempts:
-                print("Error: Unable to send private tweet.")
+                print("Error: Unable to send direct message.")
                 import traceback
                 traceback.print_exc()
             else:
                 attempt += 1
                 print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
-    pass
 
-    
 
 def post_tweet(content=None, filename=None, max_attempts=3):
     attempt = 1
@@ -341,7 +325,7 @@ def get_avg_apy():
 
 
 
-def post_liquidity():
+def post_liquidity(test=False):
     message = "DOLA Liquidity Snapshot: \n" +\
     "📈 Total Liquidity: " + get_total_liquidity() + "\n" +\
     " Σ  Average DOLA Weight: " + get_average_dola_weight() + "\n" +\
@@ -349,8 +333,10 @@ def post_liquidity():
     "➡️ Average APY: " + get_avg_apy() + "\n"
     
     print(message)
-    
-    post_tweet(content=message)
+    if test:
+        post_tweet(content=message)
+    else:
+        post_tweet_private(content=message)
 
 def get_alerts_from_db(alert_ids, since=None):
     # Replace the placeholders with your actual PostgreSQL database credentials
@@ -405,3 +391,4 @@ def monitor_database(alert_ids, poll_interval=60):
                 check_and_send_tweet(row['message'])
 
         time.sleep(poll_interval)
+
