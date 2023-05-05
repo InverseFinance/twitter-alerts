@@ -10,6 +10,9 @@ import matplotlib.colors as mcolors
 from prettytable import PrettyTable
 import matplotlib.style as style
 from bs4 import BeautifulSoup
+import psycopg2
+import json
+
 
 load_dotenv()
 
@@ -255,3 +258,31 @@ def post_liquidity():
     
     post_tweet(content=message)
 
+def get_alerts_from_db(alert_ids):
+    # Replace the placeholders with your actual PostgreSQL database credentials
+    conn = psycopg2.connect(
+        dbname=os.environ.get('DB_NAME'),
+        user=os.environ.get('DB_USER'),
+        password=os.environ.get('DB_PASSWORD'),
+        host=os.environ.get('DB_HOST'),
+        port=os.environ.get('DB_PORT'),
+
+    )
+
+    cur = conn.cursor()
+    cur.execute("SELECT created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s);", (alert_ids,))
+    rows = cur.fetchall()
+    conn.close()
+
+    print(f"Rows fetched: {len(rows)}")  # Debugging line
+
+    # Create a DataFrame from the rows
+    df = pd.DataFrame(rows, columns=['created_at', 'alert_id', 'message'])
+
+    # Convert the 'message' column from JSON strings to dictionaries
+    df['message'] = df['message'].apply(json.loads)
+
+    return df
+
+df = get_alerts_from_db([81])
+print(df)
