@@ -67,7 +67,7 @@ if __name__ == "__main__":
     t.start()
 
     deposits_alert_ids = [81]
-    deposits_monitoring_thread = threading.Thread(target=monitor_database, args=(deposits_alert_ids,))
+    deposits_monitoring_thread = threading.Thread(target=helpers.monitor_database, args=(deposits_alert_ids,))
     deposits_monitoring_thread.start()
     
     # configure the production server
