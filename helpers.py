@@ -11,9 +11,6 @@ import requests
 import pandas as pd
 from time import sleep
 
-
-from time import sleep
-
 load_dotenv()
 
 import os
@@ -375,8 +372,7 @@ def get_alerts_from_db(alert_ids, since=None):
     return df
 
 def check_and_send_tweet(alert):
-    embed = alert['embed']
-    for field in embed['fields']:
+    for field in alert['fields']:
         if field['name'] == 'USD value':
             value = float(field['value'].replace(',', ''))
             if value > 1000000:
@@ -406,7 +402,7 @@ def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
                     for index, row in new_alerts.iterrows():
                         check_and_send_tweet(row['message'])
 
-                time.sleep(poll_interval)
+                sleep(poll_interval)
 
         except Exception as e:
             if attempt == max_attempts:
