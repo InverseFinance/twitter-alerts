@@ -204,7 +204,7 @@ def get_top_apy(type):
     df = df.head(5)
     return df
 
-def post_stable():
+def post_stable(test=False):
 
     #post_tweet(content="", filename="test.png")
     table = get_top_apy('stable')
@@ -219,9 +219,13 @@ def post_stable():
 
     print(message)
     #message = message + " " + message.split()[-1]
-    post_tweet(content=message)
+    if test:
+        post_tweet_private(content=message)
+    else:
+        post_tweet(content=message)
 
-def post_volatile():
+
+def post_volatile(test=False):
     
         #post_tweet(content="", filename="test.png")
         table = get_top_apy('volatile')
@@ -236,7 +240,10 @@ def post_volatile():
     
         print(message)
         #message = message + " " + message.split()[-1]    
-        post_tweet(content=message)
+        if test:
+            post_tweet_private(content=message)
+        else:
+            post_tweet(content=message)
 
 
 def get_liquidity_data(retry_attempts=5, retry_delay=5):
@@ -334,9 +341,9 @@ def post_liquidity(test=False):
     
     print(message)
     if test:
-        post_tweet(content=message)
-    else:
         post_tweet_private(content=message)
+    else:
+        post_tweet(content=message)
 
 def get_alerts_from_db(alert_ids, since=None):
     # Replace the placeholders with your actual PostgreSQL database credentials
@@ -375,20 +382,39 @@ def check_and_send_tweet(alert):
             if value > 1000000:
                 # Send tweet with the required information
                 tweet = f"Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert['alert_id']}."
-                post_tweet(tweet)
+                post_tweet_private(tweet)
             else :
-                print(f"Not tweeted : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert['alert_id']}.")
+                # Send tweet with the required information
+                tweet = f"Not posted : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert['alert_id']}."
+                post_tweet_private(tweet)
 
 
-def monitor_database(alert_ids, poll_interval=60):
-    last_check_time = None
-    while True:
-        new_alerts = get_alerts_from_db(alert_ids, since=last_check_time)
-        if not new_alerts.empty:
-            last_check_time = new_alerts['created_at'].max()
+def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
+    attempt = 1
+    while attempt <= max_attempts:
+        try:
+            last_check_time = None
+            while True:
+                if last_check_time is None:
+                    new_alerts = get_alerts_from_db(alert_ids)
+                else:
+                    new_alerts = get_alerts_from_db(alert_ids, since=last_check_time)
+                
+                if not new_alerts.empty:
+                    last_check_time = new_alerts['created_at'].max()
 
-            for index, row in new_alerts.iterrows():
-                check_and_send_tweet(row['message'])
+                    for index, row in new_alerts.iterrows():
+                        check_and_send_tweet(row['message'])
 
-        time.sleep(poll_interval)
+                time.sleep(poll_interval)
+
+        except Exception as e:
+            if attempt == max_attempts:
+                print("Error: Unable to monitor database.")
+                import traceback
+                traceback.print_exc()
+            else:
+                attempt += 1
+                print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
+
 
