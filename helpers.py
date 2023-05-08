@@ -371,17 +371,17 @@ def get_alerts_from_db(alert_ids, since=None):
 
     return df
 
-def check_and_send_tweet(alert):
+def check_and_send_tweet(alert,alert_id):
     for field in alert['fields']:
         if field['name'] == 'Amount USD':
             value = float(field['value'].replace(',', ''))
             if value > 1000000:
                 # Send tweet with the required information
-                tweet = f"Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert['alert_id']}."
+                tweet = f"Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
                 post_tweet_private(tweet)
             else :
                 # Send tweet with the required information
-                tweet = f"Not posted : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert['alert_id']}."
+                tweet = f"Not posted : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
                 post_tweet_private(tweet)
 
 
@@ -400,7 +400,7 @@ def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
                     last_check_time = new_alerts['created_at'].max()
 
                     for index, row in new_alerts.iterrows():
-                        check_and_send_tweet(row['message'])
+                        check_and_send_tweet(row['message'],row['alert_id'])
 
                 sleep(poll_interval)
 
