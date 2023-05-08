@@ -377,22 +377,26 @@ def check_and_send_tweet(alert,alert_id):
             value = float(field['value'].replace(',', ''))
             if value > 1000000:
                 # Send tweet with the required information
-                tweet = f"Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
+                tweet = f"${alert['title']} : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
+                sleep(1)
                 post_tweet_private(tweet)
             else :
                 # Send tweet with the required information
-                tweet = f"Not posted : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
+                tweet = f"Not posted : ${alert['title']} : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
+                sleep(1)
                 post_tweet_private(tweet)
 
 
 def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
     attempt = 1
+    last_processed_alert_id = 0
     while attempt <= max_attempts:
         try:
             last_check_time = None
             while True:
                 if last_check_time is None:
                     new_alerts = get_alerts_from_db(alert_ids)
+                    last_processed_alert_id = new_alerts['alert_id'].max()
                 else:
                     new_alerts = get_alerts_from_db(alert_ids, since=last_check_time)
                 
@@ -400,7 +404,9 @@ def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
                     last_check_time = new_alerts['created_at'].max()
 
                     for index, row in new_alerts.iterrows():
-                        check_and_send_tweet(row['message'],row['alert_id'])
+                        if row['alert_id'] > last_processed_alert_id:
+                            check_and_send_tweet(row['message'], row['alert_id'])
+                            last_processed_alert_id = row['alert_id']
 
                 sleep(poll_interval)
 
@@ -412,5 +418,6 @@ def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
             else:
                 attempt += 1
                 print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
+
 
 
