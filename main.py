@@ -1,10 +1,8 @@
-import sched
-import time
-import sys
-import datetime
-import helpers
-import threading
+
+from scheduler import schedule_tasks
+from helpers import monitor_database
 from flask import Flask, jsonify
+from threading import Thread
 
 app = Flask(__name__)
 
@@ -13,61 +11,15 @@ app = Flask(__name__)
 def health_check():
     return jsonify({'status': 'ok'})
 
-def task1():
-    # write code for task 1 here
-    helpers.post_stable()
-
-def task2():
-    # write code for task 2 here
-    helpers.post_volatile()
-
-def task3():
-    # write code for task 3 here
-    helpers.post_liquidity()
-
-
-def schedule_tasks():
-    # create a scheduler instance
-    s = sched.scheduler(time.time, time.sleep)
-
-    # schedule the tasks to run at different times
-    schedule_next_task_func(14,0, task1, s)
-    schedule_next_task_func(15,0, task2, s)
-    schedule_next_task_func(22,0, task3, s)
-
-    # start the scheduler
-    s.run()
-
-def schedule_next_task_func(hour, minute, task_func, s):
-    # get the current time
-    now = datetime.datetime.now()
-
-    # compute the next time the task should run
-    next_run = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
-    if next_run < now:
-        next_run += datetime.timedelta(days=1)
-
-    # calculate the delay until the next run
-    delay = (next_run - now).total_seconds()
-
-    # schedule the next run of the task
-    s.enter(delay, 1, run_task, (hour, minute, task_func, s))
-
-def run_task(hour, minute, task_func, s):
-    # execute the task
-    task_func()
-
-    # schedule the next run of the task
-    schedule_next_task_func(hour, minute, task_func, s)
 
 if __name__ == "__main__":
     # create a new thread object and pass it the schedule_tasks() function as the target
-    t = threading.Thread(target=schedule_tasks)
+    t = Thread(target=schedule_tasks)
     # start the thread
     t.start()
 
     deposits_alert_ids = [97,246,277,282]
-    deposits_monitoring_thread = threading.Thread(target=helpers.monitor_database, args=(deposits_alert_ids,))
+    deposits_monitoring_thread = Thread(target=monitor_database, args=(deposits_alert_ids,))
     deposits_monitoring_thread.start()
     
     # configure the production server
