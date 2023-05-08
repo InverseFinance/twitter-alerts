@@ -355,16 +355,16 @@ def get_alerts_from_db(alert_ids, since=None):
 
     cur = conn.cursor()
     if since:
-        cur.execute("SELECT created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s) AND created_at > %s ORDER BY created_at DESC", (alert_ids, since))
+        cur.execute("SELECT id,created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s) AND created_at > %s ORDER BY created_at DESC", (alert_ids, since))
     else:
-        cur.execute("SELECT created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s) ORDER BY created_at DESC", (alert_ids,))
+        cur.execute("SELECT id,created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s) ORDER BY created_at DESC", (alert_ids,))
     rows = cur.fetchall()
     conn.close()
 
     print(f"Rows fetched: {len(rows)}")  # Debugging line
 
     # Create a DataFrame from the rows
-    df = pd.DataFrame(rows, columns=['created_at', 'alert_id', 'message'])
+    df = pd.DataFrame(rows, columns=['id','created_at', 'alert_id', 'message'])
 
     # Convert the 'message' column from JSON strings to dictionaries
     df['message'] = df['message'].apply(json.loads)
@@ -373,18 +373,21 @@ def get_alerts_from_db(alert_ids, since=None):
 
 def check_and_send_tweet(alert,alert_id):
     for field in alert['fields']:
-        if field['name'] == 'Amount USD':
+        if field['name'] == 'Amount':
             value = float(field['value'].replace(',', ''))
             if value > 1000000:
                 # Send tweet with the required information
                 tweet = f"${alert['title']} : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
+                print('Posting : '+tweet)
                 sleep(1)
+
                 post_tweet_private(tweet)
             else :
                 # Send tweet with the required information
                 tweet = f"Not posted : ${alert['title']} : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
                 sleep(1)
-                post_tweet_private(tweet)
+                print(tweet)
+                post_tweet_private('Not posted : '+tweet)
 
 
 def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
@@ -396,7 +399,7 @@ def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
             while True:
                 if last_check_time is None:
                     new_alerts = get_alerts_from_db(alert_ids)
-                    last_processed_alert_id = new_alerts['alert_id'].max()
+                    last_processed_alert_id = new_alerts['id'].max()
                 else:
                     new_alerts = get_alerts_from_db(alert_ids, since=last_check_time)
                 
@@ -404,9 +407,11 @@ def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
                     last_check_time = new_alerts['created_at'].max()
 
                     for index, row in new_alerts.iterrows():
-                        if row['alert_id'] > last_processed_alert_id:
+                        #print('id:' ,row['id'])
+                        #print('last processed id:' ,last_processed_alert_id)
+                        if row['id'] > last_processed_alert_id:
                             check_and_send_tweet(row['message'], row['alert_id'])
-                            last_processed_alert_id = row['alert_id']
+                            last_processed_alert_id = row['id']
 
                 sleep(poll_interval)
 
@@ -418,6 +423,7 @@ def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
             else:
                 attempt += 1
                 print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
+
 
 
 

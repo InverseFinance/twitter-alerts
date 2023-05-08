@@ -3,20 +3,20 @@ import sched
 import time
 import sys
 import datetime
-import helpers
+from helpers import post_stable, post_volatile, post_liquidity
 
 
 def task1():
     # write code for task 1 here
-    helpers.post_stable()
+    post_stable()
 
 def task2():
     # write code for task 2 here
-    helpers.post_volatile()
+    post_volatile()
 
 def task3():
     # write code for task 3 here
-    helpers.post_liquidity()
+    post_liquidity()
 
 
 def schedule_tasks():
