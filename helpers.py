@@ -373,7 +373,7 @@ def get_alerts_from_db(alert_ids, since=None):
 
 def check_and_send_tweet(alert):
     for field in alert['fields']:
-        if field['name'] == 'USD value':
+        if field['name'] == 'Amount USD':
             value = float(field['value'].replace(',', ''))
             if value > 1000000:
                 # Send tweet with the required information
