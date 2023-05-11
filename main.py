@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # start the thread
     t.start()
 
-    deposits_alert_ids = [97,246,277,282]
+    deposits_alert_ids = [97,246,277,282,286]
     deposits_monitoring_thread = Thread(target=monitor_database, args=(deposits_alert_ids,))
     deposits_monitoring_thread.start()
     
