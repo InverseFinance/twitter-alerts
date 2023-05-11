@@ -391,7 +391,7 @@ def check_deposits_and_send_tweet(alert,market_name):
 
                 print('Posting : \n'+tweet)
                 sleep(1)
-                post_tweet_private(tweet)
+                post_tweet(tweet)
             else :
                 # Send tweet with the required information
                 tweet = f"🚨 Alert on {market_name} market : \n"+\
@@ -423,7 +423,7 @@ def check_borrows_and_send_tweet(alert,market_name):
 
                 print('Posting : \n'+tweet)
                 sleep(1)
-                post_tweet_private(tweet)
+                post_tweet(tweet)
 
             else :
                 # Send tweet with the required information
