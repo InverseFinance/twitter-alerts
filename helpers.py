@@ -385,8 +385,8 @@ def check_deposits_and_send_tweet(alert,market_name):
                         tx_hash = tx_hash[start_index:end_index]
 
             if value > 50000:
-                tweet = f"Alert on {market_name} market : \n"+\
-                        f"A deposit worth ${value:,.0f} just happened !\n"+\
+                tweet = f"🚨 Alert on {market_name} market : \n"+\
+                        f"✅ A deposit worth ${value:,.0f} just happened !\n"+\
                         f"{tx_hash}"
 
                 print('Posting : \n'+tweet)
@@ -394,8 +394,8 @@ def check_deposits_and_send_tweet(alert,market_name):
                 post_tweet_private(tweet)
             else :
                 # Send tweet with the required information
-                tweet = f"Alert on {market_name} market : \n"+\
-                        f"A deposit worth ${value:,.0f} just happened !\n"+\
+                tweet = f"🚨 Alert on {market_name} market : \n"+\
+                        f"✅ A deposit worth ${value:,.0f} just happened !\n"+\
                         f"{tx_hash}"
                 
                 print('Not Posting : \n'+tweet)
@@ -417,18 +417,18 @@ def check_borrows_and_send_tweet(alert,market_name):
 
             if value > 50000:
 
-                tweet = f"Alert on {market_name} market : \n"+\
-                        f"A Borrow worth {value:,.0f} $DOLA just happened !\n"+\
+                tweet = f"🚨 Alert on {market_name} market : \n"+\
+                        f"💰 A Borrow worth {value:,.0f} $DOLA just happened !\n"+\
                         f"{tx_hash}"
 
                 print('Posting : \n'+tweet)
                 sleep(1)
                 post_tweet_private(tweet)
-                
+
             else :
                 # Send tweet with the required information
-                tweet = f"Alert on {market_name} market : \n"+\
-                        f"A borrow worth {value:,.0f} $DOLA just happened !\n"+\
+                tweet = f"🚨 Alert on {market_name} market : \n"+\
+                        f"💰 A borrow worth {value:,.0f} $DOLA just happened !\n"+\
                         f"{tx_hash}"
                 
                 print('Not Posting : \n'+tweet)
