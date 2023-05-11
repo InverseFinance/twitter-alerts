@@ -377,16 +377,14 @@ def check_deposits_and_send_tweet(alert,market_name):
         if field['name'] == 'Amount USD':
             value = float(field['value'].replace(',', ''))
 
-
-            if value > 50000:
-                # Send tweet with the required information on trhe following form :
-                # Alert on market_name market : \n
-                # A deposit worth value just happened!
-                # transaction_link
-                for field in alert['fields']:
+            for field in alert['fields']:
                     if field['name'] == 'Transaction :':
                         tx_hash = field['value']
+                        start_index = tx_hash.find("(") + 1
+                        end_index = tx_hash.find(")")
+                        tx_hash = tx_hash[start_index:end_index]
 
+            if value > 50000:
                 tweet = f"Alert on {market_name} market : \n"+\
                         f"A deposit worth ${value:,.0f} just happened !\n"+\
                         f"{tx_hash}"
@@ -410,15 +408,14 @@ def check_borrows_and_send_tweet(alert,market_name):
         if field['name'] == 'Amount':
             value = float(field['value'].replace(',', ''))
 
+            for field in alert['fields']:
+                if field['name'] == 'Transaction :':
+                    tx_hash = field['value']
+                    start_index = tx_hash.find("(") + 1
+                    end_index = tx_hash.find(")")
+                    tx_hash = tx_hash[start_index:end_index]
 
             if value > 50000:
-                # Send tweet with the required information on trhe following form :
-                # Alert on market_name market : \n
-                # A deposit worth value just happened!
-                # transaction_link
-                for field in alert['fields']:
-                    if field['name'] == 'Transaction :':
-                        tx_hash = field['value']
 
                 tweet = f"Alert on {market_name} market : \n"+\
                         f"A Borrow worth {value:,.0f} $DOLA just happened !\n"+\
@@ -427,6 +424,7 @@ def check_borrows_and_send_tweet(alert,market_name):
                 print('Posting : \n'+tweet)
                 sleep(1)
                 post_tweet_private(tweet)
+                
             else :
                 # Send tweet with the required information
                 tweet = f"Alert on {market_name} market : \n"+\
