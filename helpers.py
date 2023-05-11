@@ -355,9 +355,9 @@ def get_alerts_from_db(alert_ids, since=None):
 
     cur = conn.cursor()
     if since:
-        cur.execute("SELECT m.id, m.created_at, m.alert_id, c.name, m.message FROM  alerts_logmessage m LEFT JOIN alerts_alert a ON  m.alert_id = a.id LEFT JOIN alerts_contract c on c.id = a.contract_id  WHERE alert_id = ANY(%s) AND created_at > %s ORDER BY created_at DESC", (alert_ids, since))
+        cur.execute("SELECT m.id, m.created_at, m.alert_id, c.name, m.message FROM  alerts_logmessage m LEFT JOIN alerts_alert a ON  m.alert_id = a.id LEFT JOIN alerts_contract c on c.id = a.contract_id  WHERE alert_id = ANY(%s) AND m.created_at > %s ORDER BY m.created_at DESC", (alert_ids, since))
     else:
-        cur.execute("SELECT m.id, m.created_at, m.alert_id, c.name, m.message FROM  alerts_logmessage m LEFT JOIN alerts_alert a ON  m.alert_id = a.id LEFT JOIN alerts_contract c on c.id = a.contract_id  WHERE alert_id = ANY(%s)  ORDER BY created_at DESC", (alert_ids,))
+        cur.execute("SELECT m.id, m.created_at, m.alert_id, c.name, m.message FROM  alerts_logmessage m LEFT JOIN alerts_alert a ON  m.alert_id = a.id LEFT JOIN alerts_contract c on c.id = a.contract_id  WHERE alert_id = ANY(%s)  ORDER BY m.created_at DESC", (alert_ids,))
     rows = cur.fetchall()
     conn.close()
 
