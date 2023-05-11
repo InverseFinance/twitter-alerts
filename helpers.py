@@ -355,42 +355,89 @@ def get_alerts_from_db(alert_ids, since=None):
 
     cur = conn.cursor()
     if since:
-        cur.execute("SELECT id,created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s) AND created_at > %s ORDER BY created_at DESC", (alert_ids, since))
+        cur.execute("SELECT m.id, m.created_at, m.alert_id, c.name, m.message FROM  alerts_logmessage m LEFT JOIN alerts_alert a ON  m.alert_id = a.id LEFT JOIN alerts_contract c on c.id = a.contract_id  WHERE alert_id = ANY(%s) AND created_at > %s ORDER BY created_at DESC", (alert_ids, since))
     else:
-        cur.execute("SELECT id,created_at, alert_id, message FROM alerts_logmessage WHERE alert_id = ANY(%s) ORDER BY created_at DESC", (alert_ids,))
+        cur.execute("SELECT m.id, m.created_at, m.alert_id, c.name, m.message FROM  alerts_logmessage m LEFT JOIN alerts_alert a ON  m.alert_id = a.id LEFT JOIN alerts_contract c on c.id = a.contract_id  WHERE alert_id = ANY(%s)  ORDER BY created_at DESC", (alert_ids,))
     rows = cur.fetchall()
     conn.close()
 
     print(f"Rows fetched: {len(rows)}")  # Debugging line
 
     # Create a DataFrame from the rows
-    df = pd.DataFrame(rows, columns=['id','created_at', 'alert_id', 'message'])
+    df = pd.DataFrame(rows, columns=['id','created_at', 'alert_id', 'message','name'])
 
     # Convert the 'message' column from JSON strings to dictionaries
     df['message'] = df['message'].apply(json.loads)
 
     return df
 
-def check_and_send_tweet(alert,alert_id):
+def check_deposits_and_send_tweet(alert,market_name):
     for field in alert['fields']:
-        if field['name'] == 'Amount':
+        if field['name'] == 'Amount USD':
             value = float(field['value'].replace(',', ''))
-            if value > 1000000:
-                # Send tweet with the required information
-                tweet = f"${alert['title']} : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
-                print('Posting : '+tweet)
-                sleep(1)
 
+
+            if value > 50000:
+                # Send tweet with the required information on trhe following form :
+                # Alert on market_name market : \n
+                # A deposit worth value just happened!
+                # transaction_link
+                for field in alert['fields']:
+                    if field['name'] == 'Transaction :':
+                        tx_hash = field['value']
+
+                tweet = f"Alert on {market_name} market : \n"+\
+                        f"A deposit worth ${value:,.0f} just happened !\n"+\
+                        f"{tx_hash}"
+
+                print('Posting : \n'+tweet)
+                sleep(1)
                 post_tweet_private(tweet)
             else :
                 # Send tweet with the required information
-                tweet = f"Not posted : ${alert['title']} : Alert: A transaction worth ${value:,.0f} just happened! Alert ID: {alert_id}."
+                tweet = f"Alert on {market_name} market : \n"+\
+                        f"A deposit worth ${value:,.0f} just happened !\n"+\
+                        f"{tx_hash}"
+                
+                print('Not Posting : \n'+tweet)
                 sleep(1)
-                print(tweet)
-                post_tweet_private('Not posted : '+tweet)
+                post_tweet_private('Not posted : \n'+tweet)
 
 
-def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
+def check_borrows_and_send_tweet(alert,market_name):
+    for field in alert['fields']:
+        if field['name'] == 'Amount':
+            value = float(field['value'].replace(',', ''))
+
+
+            if value > 50000:
+                # Send tweet with the required information on trhe following form :
+                # Alert on market_name market : \n
+                # A deposit worth value just happened!
+                # transaction_link
+                for field in alert['fields']:
+                    if field['name'] == 'Transaction :':
+                        tx_hash = field['value']
+
+                tweet = f"Alert on {market_name} market : \n"+\
+                        f"A Borrow worth {value:,.0f} $DOLA just happened !\n"+\
+                        f"{tx_hash}"
+
+                print('Posting : \n'+tweet)
+                sleep(1)
+                post_tweet_private(tweet)
+            else :
+                # Send tweet with the required information
+                tweet = f"Alert on {market_name} market : \n"+\
+                        f"A borrow worth {value:,.0f} $DOLA just happened !\n"+\
+                        f"{tx_hash}"
+                
+                print('Not Posting : \n'+tweet)
+                sleep(1)
+                post_tweet_private('Not posted : \n'+tweet)
+
+
+def monitor_deposits(alert_ids, poll_interval=60, max_attempts=3):
     attempt = 1
     last_processed_alert_id = 0
     while attempt <= max_attempts:
@@ -410,14 +457,48 @@ def monitor_database(alert_ids, poll_interval=60, max_attempts=3):
                         #print('id:' ,row['id'])
                         #print('last processed id:' ,last_processed_alert_id)
                         if row['id'] > last_processed_alert_id:
-                            check_and_send_tweet(row['message'], row['alert_id'])
+                            check_deposits_and_send_tweet(row['message'], row['alert_id'], row['name'])
                             last_processed_alert_id = row['id']
 
                 sleep(poll_interval)
 
         except Exception as e:
             if attempt == max_attempts:
-                print("Error: Unable to monitor database.")
+                print("Error: Unable to monitor deposits.")
+                import traceback
+                traceback.print_exc()
+            else:
+                attempt += 1
+                print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
+
+def monitor_borrows(alert_ids, poll_interval=60, max_attempts=3):
+    attempt = 1
+    last_processed_alert_id = 0
+    while attempt <= max_attempts:
+        try:
+            last_check_time = None
+            while True:
+                if last_check_time is None:
+                    new_alerts = get_alerts_from_db(alert_ids)
+                    last_processed_alert_id = new_alerts['id'].max()
+                else:
+                    new_alerts = get_alerts_from_db(alert_ids, since=last_check_time)
+                
+                if not new_alerts.empty:
+                    last_check_time = new_alerts['created_at'].max()
+
+                    for index, row in new_alerts.iterrows():
+                        #print('id:' ,row['id'])
+                        #print('last processed id:' ,last_processed_alert_id)
+                        if row['id'] > last_processed_alert_id:
+                            check_deposits_and_send_tweet(row['message'], row['alert_id'])
+                            last_processed_alert_id = row['id']
+
+                sleep(poll_interval)
+
+        except Exception as e:
+            if attempt == max_attempts:
+                print("Error: Unable to monitor deposits.")
                 import traceback
                 traceback.print_exc()
             else:

@@ -1,6 +1,6 @@
 
 from scheduler import schedule_tasks
-from helpers import monitor_database
+from helpers import monitor_deposits, monitor_borrows
 from flask import Flask, jsonify
 from threading import Thread
 
@@ -19,9 +19,13 @@ if __name__ == "__main__":
     t.start()
 
     deposits_alert_ids = [97,246,277,282,286]
-    deposits_monitoring_thread = Thread(target=monitor_database, args=(deposits_alert_ids,))
+    deposits_monitoring_thread = Thread(target=monitor_deposits, args=(deposits_alert_ids,))
     deposits_monitoring_thread.start()
     
+    borrows_alert_ids = [94,244,279,283,288]
+    borrows_monitoring_thread = Thread(target=monitor_borrows, args=(borrows_alert_ids,))
+    deposits_monitoring_thread.start()
+
     # configure the production server
     from gunicorn.app.base import BaseApplication
 
