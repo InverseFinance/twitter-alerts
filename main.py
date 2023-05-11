@@ -24,7 +24,7 @@ if __name__ == "__main__":
     
     borrows_alert_ids = [94,244,279,283,288]
     borrows_monitoring_thread = Thread(target=monitor_borrows, args=(borrows_alert_ids,))
-    deposits_monitoring_thread.start()
+    borrows_monitoring_thread.start()
 
     # configure the production server
     from gunicorn.app.base import BaseApplication

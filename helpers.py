@@ -364,10 +364,11 @@ def get_alerts_from_db(alert_ids, since=None):
     print(f"Rows fetched: {len(rows)}")  # Debugging line
 
     # Create a DataFrame from the rows
-    df = pd.DataFrame(rows, columns=['id','created_at', 'alert_id', 'message','name'])
+    df = pd.DataFrame(rows, columns=['id','created_at', 'alert_id','name', 'message'])
 
     # Convert the 'message' column from JSON strings to dictionaries
     df['message'] = df['message'].apply(json.loads)
+    print(df)
 
     return df
 
@@ -457,7 +458,7 @@ def monitor_deposits(alert_ids, poll_interval=60, max_attempts=3):
                         #print('id:' ,row['id'])
                         #print('last processed id:' ,last_processed_alert_id)
                         if row['id'] > last_processed_alert_id:
-                            check_deposits_and_send_tweet(row['message'], row['alert_id'], row['name'])
+                            check_deposits_and_send_tweet(row['message'], row['name'])
                             last_processed_alert_id = row['id']
 
                 sleep(poll_interval)
@@ -491,14 +492,14 @@ def monitor_borrows(alert_ids, poll_interval=60, max_attempts=3):
                         #print('id:' ,row['id'])
                         #print('last processed id:' ,last_processed_alert_id)
                         if row['id'] > last_processed_alert_id:
-                            check_deposits_and_send_tweet(row['message'], row['alert_id'])
+                            check_borrows_and_send_tweet(row['message'], row['name'])
                             last_processed_alert_id = row['id']
 
                 sleep(poll_interval)
 
         except Exception as e:
             if attempt == max_attempts:
-                print("Error: Unable to monitor deposits.")
+                print("Error: Unable to monitor borrows.")
                 import traceback
                 traceback.print_exc()
             else:
