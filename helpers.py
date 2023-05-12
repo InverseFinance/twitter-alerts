@@ -364,7 +364,7 @@ def get_alerts_from_db(alert_ids, since=None):
     print(f"Rows fetched: {len(rows)}")  # Debugging line
 
     # Create a DataFrame from the rows
-    # df = pd.DataFrame(rows, columns=['id','created_at', 'alert_id','name', 'message'])
+    df = pd.DataFrame(rows, columns=['id','created_at', 'alert_id','name', 'message'])
 
     # Convert the 'message' column from JSON strings to dictionaries
     df['message'] = df['message'].apply(json.loads)
