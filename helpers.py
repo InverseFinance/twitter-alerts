@@ -385,7 +385,7 @@ def check_deposits_and_send_tweet(alert,market_name):
                         tx_hash = tx_hash[start_index:end_index]
 
             if value > 50000:
-                market_name = replace(market_name, 'Firm ', '')
+                market_name = replace(market_name, 'FiRM ', '')
                 tweet = f"✅ ${value:,.0f} collateral deposited into {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
 
@@ -394,7 +394,7 @@ def check_deposits_and_send_tweet(alert,market_name):
                 post_tweet(tweet)
             else :
                 # Send tweet with the required information
-                market_name = replace(market_name, 'Firm ', '')
+                market_name = replace(market_name, 'FiRM ', '')
                 tweet = f"✅ ${value:,.0f} collateral deposited into {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
                 
@@ -416,7 +416,7 @@ def check_borrows_and_send_tweet(alert,market_name):
                     tx_hash = tx_hash[start_index:end_index]
 
             if value > 50000:
-                market_name = replace(market_name, 'Firm ', '')
+                market_name = replace(market_name, 'FiRM ', '')
                 tweet = f"💰 {value:,.0f} $DOLA borrowed from {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
 
@@ -426,7 +426,7 @@ def check_borrows_and_send_tweet(alert,market_name):
 
             else :
                 # Send tweet with the required information
-                market_name = replace(market_name, 'Firm ', '')
+                market_name = replace(market_name, 'FiRM ', '')
                 tweet = f"💰 {value:,.0f} $DOLA borrowed from {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
                 
