@@ -385,8 +385,7 @@ def check_deposits_and_send_tweet(alert,market_name):
                         tx_hash = tx_hash[start_index:end_index]
 
             if value > 50000:
-                tweet = f"🚨 Alert on {market_name} market : \n"+\
-                        f"✅ A deposit worth ${value:,.0f} just happened !\n"+\
+                tweet = f"✅ ${value:,.0f} collateral deposited into {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
 
                 print('Posting : \n'+tweet)
@@ -394,8 +393,7 @@ def check_deposits_and_send_tweet(alert,market_name):
                 post_tweet(tweet)
             else :
                 # Send tweet with the required information
-                tweet = f"🚨 Alert on {market_name} market : \n"+\
-                        f"✅ A deposit worth ${value:,.0f} just happened !\n"+\
+                tweet = f"✅ ${value:,.0f} collateral deposited into {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
                 
                 print('Not Posting : \n'+tweet)
@@ -417,8 +415,7 @@ def check_borrows_and_send_tweet(alert,market_name):
 
             if value > 50000:
 
-                tweet = f"🚨 Alert on {market_name} market : \n"+\
-                        f"💰 A Borrow worth {value:,.0f} $DOLA just happened !\n"+\
+                tweet = f"💰 {value:,.0f} $DOLA borrowed from {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
 
                 print('Posting : \n'+tweet)
@@ -427,8 +424,7 @@ def check_borrows_and_send_tweet(alert,market_name):
 
             else :
                 # Send tweet with the required information
-                tweet = f"🚨 Alert on {market_name} market : \n"+\
-                        f"💰 A borrow worth {value:,.0f} $DOLA just happened !\n"+\
+                tweet = f"💰 {value:,.0f} $DOLA borrowed from {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
                 
                 print('Not Posting : \n'+tweet)
