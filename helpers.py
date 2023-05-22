@@ -10,7 +10,7 @@ import json
 import requests
 import pandas as pd
 from time import sleep
-
+from datetime import datetime
 
 load_dotenv()
 
@@ -500,5 +500,43 @@ def monitor_borrows(alert_ids, poll_interval=60, max_attempts=3):
                 print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
 
 
+def monitor_tvl(poll_interval=60, max_attempts=3):
+    attempt = 1
+    last_processed_alert_id = 0
+    while attempt <= max_attempts:
+        try:
+            last_check_time = None
+            firm_tvl = 0
 
+            while True:
+                if last_check_time is None:
+                    firm_tvl = requests.get('https://www.inverse.finance/api/f2/tvl?v=2&cacheFirst=true').json()['firmTotalTvl']
+                    print('Initialising script with TVL =', firm_tvl,'check time :',datetime.now())
+                    last_check_time = datetime.now()
+                else:
+                    new_firm_tvl = requests.get('https://www.inverse.finance/api/f2/tvl?v=2&cacheFirst=true').json()['firmTotalTvl']
+                    print('New TVL =', new_firm_tvl,'check time :',datetime.now())
+                    # if the new value is in the next million mark compared to the previous value  , tweet it
 
+                    if new_firm_tvl > firm_tvl:
+                        if int(new_firm_tvl/1000000) > int(firm_tvl/1000000):
+                            tweet = f"🚨 ${new_firm_tvl:,.0f} USD TVL \n"+\
+                                    f"on FiRM today\n"+\
+                                    f"Rethink the way you borrow on FiRM today inverse.finance/firm"
+                            print('Posting : \n'+tweet)
+                            sleep(1)
+                            post_tweet(tweet)
+
+                        firm_tvl = new_firm_tvl
+                        last_check_time = datetime.now()
+
+                sleep(poll_interval)
+
+        except Exception as e:
+            if attempt == max_attempts:
+                print("Error: Unable to monitor TVL.")
+                import traceback
+                traceback.print_exc()
+            else:
+                attempt += 1
+                print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
