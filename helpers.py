@@ -384,21 +384,18 @@ def check_deposits_and_send_tweet(alert,market_name):
                         start_index = tx_hash.find("(") + 1
                         end_index = tx_hash.find(")")
                         tx_hash = tx_hash[start_index:end_index]
+            
+            market_name = market_name.replace( 'Firm ', '')
+            tweet = f"🚨 ${value:,.0f} USD deposit \n"+\
+                    f"on {market_name} market\n"+\
+                    f"{tx_hash}\n"+\
+                    f"Rethink the way you borrow on FiRM today inverse.finance/firm"
 
             if value > 50000:
-                market_name = market_name.replace( 'Firm ', '')
-                tweet = f"✅ ${value:,.0f} collateral deposited into {market_name} market on FiRM\n"+\
-                        f"{tx_hash}"
-
                 print('Posting : \n'+tweet)
                 sleep(1)
                 post_tweet(tweet)
             else :
-                # Send tweet with the required information
-                market_name = market_name.replace( 'Firm ', '')
-                tweet = f"✅ ${value:,.0f} collateral deposited into {market_name} market on FiRM\n"+\
-                        f"{tx_hash}"
-                
                 print('Not Posting : \n'+tweet)
                 sleep(1)
                 post_tweet_private('Not posted : \n'+tweet)
@@ -415,21 +412,19 @@ def check_borrows_and_send_tweet(alert,market_name):
                     start_index = tx_hash.find("(") + 1
                     end_index = tx_hash.find(")")
                     tx_hash = tx_hash[start_index:end_index]
+            
+            market_name = market_name.replace( 'Firm ', '')
+            tweet = f"🚨 ${value:,.0f} $DOLA borrow \n"+\
+                    f"on {market_name} market\n"+\
+                    f"{tx_hash}\n"+\
+                    f"Rethink the way you borrow on FiRM today inverse.finance/firm"
 
             if value > 50000:
-                market_name = market_name.replace( 'Firm ', '')
-                tweet = f"💰 {value:,.0f} $DOLA borrowed from {market_name} market on FiRM\n"+\
-                        f"{tx_hash}"
-
                 print('Posting : \n'+tweet)
                 sleep(1)
                 post_tweet(tweet)
 
             else :
-                # Send tweet with the required information
-                market_name = market_name.replace( 'Firm ', '')
-                tweet = f"💰 {value:,.0f} $DOLA borrowed from {market_name} market on FiRM\n"+\
-                        f"{tx_hash}"
                 
                 print('Not Posting : \n'+tweet)
                 sleep(1)
