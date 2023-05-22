@@ -386,11 +386,7 @@ def check_deposits_and_send_tweet(alert,market_name):
                         tx_hash = tx_hash[start_index:end_index]
 
             if value > 50000:
-<<<<<<< HEAD
                 market_name = market_name.replace( 'Firm ', '')
-=======
-                market_name = replace(market_name, 'FiRM ', '')
->>>>>>> a4f3918c8fdf5c999f9d90f5deaaee2e7f09a429
                 tweet = f"✅ ${value:,.0f} collateral deposited into {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
 
@@ -399,11 +395,7 @@ def check_deposits_and_send_tweet(alert,market_name):
                 post_tweet(tweet)
             else :
                 # Send tweet with the required information
-<<<<<<< HEAD
                 market_name = market_name.replace( 'Firm ', '')
-=======
-                market_name = replace(market_name, 'FiRM ', '')
->>>>>>> a4f3918c8fdf5c999f9d90f5deaaee2e7f09a429
                 tweet = f"✅ ${value:,.0f} collateral deposited into {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
                 
@@ -425,11 +417,7 @@ def check_borrows_and_send_tweet(alert,market_name):
                     tx_hash = tx_hash[start_index:end_index]
 
             if value > 50000:
-<<<<<<< HEAD
                 market_name = market_name.replace( 'Firm ', '')
-=======
-                market_name = replace(market_name, 'FiRM ', '')
->>>>>>> a4f3918c8fdf5c999f9d90f5deaaee2e7f09a429
                 tweet = f"💰 {value:,.0f} $DOLA borrowed from {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
 
@@ -439,11 +427,7 @@ def check_borrows_and_send_tweet(alert,market_name):
 
             else :
                 # Send tweet with the required information
-<<<<<<< HEAD
                 market_name = market_name.replace( 'Firm ', '')
-=======
-                market_name = replace(market_name, 'FiRM ', '')
->>>>>>> a4f3918c8fdf5c999f9d90f5deaaee2e7f09a429
                 tweet = f"💰 {value:,.0f} $DOLA borrowed from {market_name} market on FiRM\n"+\
                         f"{tx_hash}"
                 
