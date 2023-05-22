@@ -500,16 +500,15 @@ def monitor_borrows(alert_ids, poll_interval=60, max_attempts=3):
                 print("\nRetrying... (attempt {}/{})".format(attempt, max_attempts))
 
 
-def monitor_tvl(poll_interval=60, max_attempts=3):
+def monitor_tvl(init_value,poll_interval=60, max_attempts=3):
     attempt = 1
     while attempt <= max_attempts:
         try:
             last_check_time = None
-            firm_tvl = 0
+            firm_tvl = init_value
 
             while True:
                 if last_check_time is None:
-                    firm_tvl = requests.get('https://www.inverse.finance/api/f2/tvl?v=2&cacheFirst=true').json()['firmTotalTvl']
                     print(f"Initial TVL : ${firm_tvl:,.0f} 💪")
                     last_check_time = datetime.now()
                 else:

@@ -25,8 +25,9 @@ if __name__ == "__main__":
     borrows_alert_ids = [94,244,279,283,288]
     borrows_monitoring_thread = Thread(target=monitor_borrows, args=(borrows_alert_ids,))
     borrows_monitoring_thread.start()
-
-    tvl_monitoring_thread = Thread(target=monitor_tvl)
+    
+    init_value=11500000
+    tvl_monitoring_thread = Thread(target=monitor_tvl, args=(init_value,))
     tvl_monitoring_thread.start()
 
     # configure the production server
