@@ -510,11 +510,11 @@ def monitor_tvl(poll_interval=60, max_attempts=3):
             while True:
                 if last_check_time is None:
                     firm_tvl = requests.get('https://www.inverse.finance/api/f2/tvl?v=2&cacheFirst=true').json()['firmTotalTvl']
-                    print('Initialising script with TVL =', firm_tvl,'check time :',datetime.now())
+                    print(f"Initial TVL : ${firm_tvl:,.0f} 💪")
                     last_check_time = datetime.now()
                 else:
                     new_firm_tvl = requests.get('https://www.inverse.finance/api/f2/tvl?v=2&cacheFirst=true').json()['firmTotalTvl']
-                    print('New TVL =', new_firm_tvl,'check time :',datetime.now())
+                    print(f"New TVL : ${new_firm_tvl:,.0f} 💪")
 
                     if new_firm_tvl > firm_tvl:
                         if int(new_firm_tvl/1000000) > int(firm_tvl/1000000):
