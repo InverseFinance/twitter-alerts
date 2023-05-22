@@ -519,7 +519,7 @@ def monitor_tvl(poll_interval=60, max_attempts=3):
                     if new_firm_tvl > firm_tvl:
                         if int(new_firm_tvl/1000000) > int(firm_tvl/1000000):
                             tweet = f"🚨 $1,000,000 In New TVL Added on FiRM 💰\n"+\
-                                    f"🔸Total FiRM TVL Now : ${new_firm_tvl} 💪\n"+\
+                                    f"🔸Total FiRM TVL Now : ${new_firm_tvl:,.0f} 💪\n"+\
                                     f"🔹Rethink the way you borrow on FiRM today inverse.finance/firm"
                             
                             print('Posting : \n'+tweet)
