@@ -525,8 +525,8 @@ def monitor_tvl(init_value,poll_interval=60, max_attempts=3):
                             sleep(1)
                             post_tweet(tweet)
 
-                        firm_tvl = new_firm_tvl
-                        last_check_time = datetime.now()
+                    firm_tvl = new_firm_tvl
+                    last_check_time = datetime.now()
 
                 sleep(poll_interval)
 
