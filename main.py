@@ -26,7 +26,7 @@ if __name__ == "__main__":
     borrows_monitoring_thread = Thread(target=monitor_borrows, args=(borrows_alert_ids,))
     borrows_monitoring_thread.start()
     
-    init_value=12000000
+    init_value=13000000
     tvl_monitoring_thread = Thread(target=monitor_tvl, args=(init_value,))
     tvl_monitoring_thread.start()
 

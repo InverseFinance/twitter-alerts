@@ -502,6 +502,8 @@ def monitor_borrows(alert_ids, poll_interval=60, max_attempts=3):
 
 def monitor_tvl(init_value,poll_interval=60, max_attempts=3):
     attempt = 1
+    last_million_mark = int(init_value / 1000000)
+
     while attempt <= max_attempts:
         try:
             last_check_time = None
@@ -516,7 +518,8 @@ def monitor_tvl(init_value,poll_interval=60, max_attempts=3):
                     print(f"New TVL : ${new_firm_tvl:,.0f} 💪")
 
                     if new_firm_tvl > firm_tvl:
-                        if int(new_firm_tvl/1000000) > int(firm_tvl/1000000):
+                        new_million_mark = int(new_firm_tvl / 1000000)
+                        if new_million_mark > last_million_mark:
                             tweet = f"🚨 $1,000,000 In New TVL Added on FiRM 💰\n"+\
                                     f"🔸Total FiRM TVL Now : ${new_firm_tvl:,.0f} 💪\n"+\
                                     f"🔹Rethink the way you borrow on FiRM today inverse.finance/firm"
@@ -524,6 +527,7 @@ def monitor_tvl(init_value,poll_interval=60, max_attempts=3):
                             print('Posting : \n'+tweet)
                             sleep(1)
                             post_tweet(tweet)
+                            last_million_mark = new_million_mark  # update the million mark
 
                     firm_tvl = new_firm_tvl
                     init_value = firm_tvl
