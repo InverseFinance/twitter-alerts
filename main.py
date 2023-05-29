@@ -14,9 +14,9 @@ def health_check():
 
 if __name__ == "__main__":
     # create a new thread object and pass it the schedule_tasks() function as the target
-    t = Thread(target=schedule_tasks)
+    #t = Thread(target=schedule_tasks)
     # start the thread
-    t.start()
+    #t.start()
 
     deposits_alert_ids = [97,246,277,282,286]
     deposits_monitoring_thread = Thread(target=monitor_deposits, args=(deposits_alert_ids,))
@@ -26,9 +26,9 @@ if __name__ == "__main__":
     borrows_monitoring_thread = Thread(target=monitor_borrows, args=(borrows_alert_ids,))
     borrows_monitoring_thread.start()
     
-    init_value=13000000
-    tvl_monitoring_thread = Thread(target=monitor_tvl, args=(init_value,))
-    tvl_monitoring_thread.start()
+    #init_value=13000000
+    #tvl_monitoring_thread = Thread(target=monitor_tvl, args=(init_value,))
+    #tvl_monitoring_thread.start()
 
     # configure the production server
     from gunicorn.app.base import BaseApplication
